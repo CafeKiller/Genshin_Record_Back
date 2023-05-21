@@ -9,7 +9,8 @@ export default class RoleModel{
     public getAll = async ():Promise<any> => {
         return await weaponPool.find();
     }
-    //
+
+    //通过关键字查询
     public find = async (key:any):Promise<any> =>{
         console.log(key)
         return await weaponPool.find(key)

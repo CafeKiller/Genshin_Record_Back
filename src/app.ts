@@ -17,6 +17,7 @@ app.use(cors())
 // 引入主路由
 const indexRouter:Router = require("./routes/index")
 const rolePoolRouter:Router  = require("./routes/roolPool")
+const weaponPoolRouter:Router = require("./routes/weapPool")
 
 // 开启JSON处理
 app.use(express.json())
@@ -30,6 +31,7 @@ app.use(cookieParser())
 // 使用路由
 app.use("/",indexRouter)
 app.use("/role/pool/",rolePoolRouter)
+app.use("/weapon/pool/",weaponPoolRouter)
 
 const db = require("./db/dbManager")
 
