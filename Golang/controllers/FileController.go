@@ -1,12 +1,16 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/labstack/echo"
 	"io"
 	"net/http"
 	"os"
 )
+
+type Result struct {
+	Message string `json:"message"`
+	Data    string `json:"data"`
+}
 
 // Upload description: 文件上传控制器
 // author: Coffee_Killer
@@ -16,22 +20,20 @@ func Upload(content echo.Context) error {
 	// 获取用户上传的文件
 	file, err := content.FormFile("file")
 	if err != nil {
-		fmt.Println("1111111", err)
 		return err
 	}
 
 	// 打开文件
 	src, err := file.Open()
 	if err != nil {
-		fmt.Println("2222222", err)
 		return err
 	}
 	defer src.Close()
 
 	// 创建保存路径文件 file.Filename(即文件上传的名称), 创建upload文件夹
-	dst, err := os.Create("public/static/" + file.Filename)
+	filename := "public/static/" + file.Filename
+	dst, err := os.Create(filename)
 	if err != nil {
-		fmt.Println("333333", err)
 		return err
 	}
 	defer dst.Close()
@@ -41,5 +43,14 @@ func Upload(content echo.Context) error {
 		return err
 	}
 
-	return content.HTML(http.StatusOK, fmt.Sprintf("文件上传成功"))
+	res := &Result{
+		Message: "图片上传成功",
+		Data:    filename,
+	}
+
+	// 返回JSON格式数据
+	//content.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJavaScriptCharsetUTF8)
+	//content.Response().WriteHeader(http.StatusOK)
+	//return json.NewEncoder(content.Response()).Encode(res)
+	return content.JSON(http.StatusOK, res)
 }
