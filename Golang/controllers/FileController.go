@@ -1,18 +1,19 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/labstack/echo"
 	"io"
 	"net/http"
 	"os"
 )
 
-type Result struct {
+type Result[T string | []string] struct {
 	Message string `json:"message"`
-	Data    string `json:"data"`
+	Data    T      `json:"data"`
 }
 
-// Upload description: 文件上传控制器
+// Upload description: 单文件上传控制器
 // author: Coffee_Killer
 // date: 2023_10_16 22:21:26
 func Upload(content echo.Context) error {
@@ -43,7 +44,7 @@ func Upload(content echo.Context) error {
 		return err
 	}
 
-	res := &Result{
+	res := &Result[string]{
 		Message: "图片上传成功",
 		Data:    filename,
 	}
@@ -52,5 +53,55 @@ func Upload(content echo.Context) error {
 	//content.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJavaScriptCharsetUTF8)
 	//content.Response().WriteHeader(http.StatusOK)
 	//return json.NewEncoder(content.Response()).Encode(res)
+	return content.JSON(http.StatusOK, res)
+}
+
+// UploadMore
+func UploadMore(content echo.Context) error {
+	form, err := content.MultipartForm()
+	if err != nil {
+		fmt.Errorf("err = %s", err)
+		return err
+	}
+
+	files := form.File["files"]
+
+	var fileArr []string
+	for _, file := range files {
+		// NOTE: 使用匿名函数, 避免defer在循环中调用导致内存泄漏问题
+		err := func() error {
+			src, err := file.Open()
+			if err != nil {
+				fmt.Errorf("err = %s", err)
+				return err
+			}
+			defer src.Close()
+
+			fileName := "public/static/" + file.Filename
+			dst, err := os.Create(fileName)
+			if err != nil {
+				fmt.Errorf("err = %s", err)
+				return err
+			}
+			defer dst.Close()
+
+			fileArr = append(fileArr, fileName)
+
+			if _, err = io.Copy(dst, src); err != nil {
+				fmt.Errorf("err = %s", err)
+				return err
+			}
+
+			return nil
+		}()
+		if err != nil {
+			fmt.Errorf("err = %s", err)
+		}
+	}
+
+	res := &Result[[]string]{
+		Message: "图片上传成功",
+		Data:    fileArr,
+	}
 	return content.JSON(http.StatusOK, res)
 }

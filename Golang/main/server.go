@@ -22,6 +22,8 @@ func main() {
 	// 注册Post请求, 用于处理文件上传
 	echoApp.POST("/upload", controllers.Upload)
 
+	echoApp.POST("/uploads", controllers.UploadMore)
+
 	// 绑定端口, 同时监听服务
 	echoApp.Start(":3333")
 }
